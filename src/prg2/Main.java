@@ -11,7 +11,6 @@ public class Main{
 		//Realizamos todo dentro de un try/catch que manda entrada invalida cuando se lanza cualquier excepcion
 		try {
 
-
 			int size = sc.nextInt();
 
 			//Comprueba que se introduce un num prositivo
@@ -24,17 +23,26 @@ public class Main{
 				int[][] mat = new int[size][size]; 
 				Scanner sc1 = new Scanner(System.in);
 				leerRec(size,mat,sc1,0,0);
-	
+				sc1.close();
+				
 				//temp
 				print2D(mat);
 				
-				int[][] matTrans = new int[size][size];
-				transRec(mat,matTrans, size,0,0);
+				int[][] sqrt = new int[size][size];
+				int[][] sqrtTrans = new int[size][size];
+				matToSqrt(size,mat,sqrt,0,0);
+				transRec(sqrt,sqrtTrans, size,0,0);
 				
 				//temp
-				print2D(matTrans);
+				print2D(sqrt);
+				print2D(sqrtTrans);
 				
-				System.out.println(sqrtRec(255,0));
+				if(isSameMat(sqrt,sqrtTrans,size,0,0)) {
+					System.out.println("SILOCO");
+				}
+				else{
+					System.out.println("NOLOCO");
+				}
 				
 			}
 		} catch (Exception e) {
@@ -64,6 +72,23 @@ public class Main{
 
 	}
 
+	
+private static void matToSqrt(int tam, int[][] input, int[][] sqrt, int x, int y) {
+
+		if (y < tam) {
+			if (x < tam) {
+				sqrt[y][x] = sqrtRec(input[x][y],1);
+				matToSqrt(tam, input, sqrt, x + 1, y);
+
+			} else {
+				x = 0;
+				matToSqrt(tam, input, sqrt, x , y+1);
+			} 
+		}
+
+	}
+
+	
 	private static void entradaInvalida() {
 		System.out.println("Entrada invalida");
 		System.exit(-1);
@@ -86,10 +111,8 @@ public class Main{
 	}
 
 	private static int sqrtRec(int num, int i) {
-		System.out.println(i*i);
 		if ((i*i) < num) {
 			i++;
-			
 			return(sqrtRec(num,i));
 		}
 
@@ -104,7 +127,26 @@ public class Main{
 		}
 	}
 	
+	private static boolean isSameMat(int[][] mat1, int[][] mat2, int tam,int  x, int y) {
+		boolean out = true;
+		
+		if (y < tam) {
+			if (x < tam) {
+				if(mat1[x][y]!=mat2[x][y]) {
+					out = false;
+				}
+				isSameMat(mat1,mat2, tam,x+1, y);
 
+			} else {
+				x = 0;
+				isSameMat(mat1, mat2, tam, x, y+1);
+			}
+		}
+		
+		return out;
+		
+	}
+	
 	//TEMPORAL
 	public static void print2D(int mat[][]) 
     { 
