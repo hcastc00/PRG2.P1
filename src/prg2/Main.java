@@ -1,7 +1,6 @@
 package prg2;
 
 import java.util.Arrays;
-import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Main {
@@ -14,7 +13,7 @@ public class Main {
 		try {
 
 			int size = sc.nextInt();
-
+			sc.nextLine();
 			// Comprueba que se introduce un num prositivo
 			if (size <= 0) {
 				entradaInvalida();
@@ -24,11 +23,12 @@ public class Main {
 			// al metodo que la lee
 			else {
 				int[][] mat = new int[size][size];
-				leerRec(size, mat, sc, 0, 0);
+				String in = new String();
+				readToMat(size, mat, in, sc, 0, 0, null);
 				sc.close();
-
+				System.out.println("Cerrao scanner");
 				// temp
-				// print2D(mat);
+				print2D(mat);
 
 				int[][] sqrt = new int[size][size];
 				int[][] sqrtTrans = new int[size][size];
@@ -36,10 +36,10 @@ public class Main {
 				transRec(sqrt, sqrtTrans, size, 0, 0);
 
 				// temp
-				// print2D(sqrt);
-				// print2D(sqrtTrans);
+				print2D(sqrt);
+				print2D(sqrtTrans);
 
-				if (isSameMat(sqrt, sqrtTrans, size, 0, 0)) {
+				if (isSame(sqrt, sqrtTrans, size, 0, 0)) {
 					System.out.println("La matriz de tamaño " + size + " es de raíz entera simétrica.");
 				} else {
 					System.out.println("NOLOCO");
@@ -47,7 +47,36 @@ public class Main {
 
 			}
 		} catch (Exception e) {
-			// entradaInvalida();
+			entradaInvalida();
+		}
+	}
+
+	private static void readToMat(int tam, int[][] mat, String input, Scanner scan, int x, int y, String[] out) {
+		System.out.println("x:" + x + " y:" + y);
+
+		if (y < tam) {
+
+			if (x == 0) {
+				System.out.println("SAPE");
+				input = scan.nextLine();
+				System.out.println(input);
+				input = input.replaceAll(" +", "-");
+				System.out.println(input);
+				out = input.split("-");
+
+				if (out.length != tam) {
+					entradaInvalida();
+				}
+			}
+
+			if (x < tam) {
+				mat[y][x] = Integer.parseInt(out[x]);
+				readToMat(tam, mat, input, scan, x + 1, y, out);
+
+			} else {
+				x = 0;
+				readToMat(tam, mat, input, scan, x, y + 1, out);
+			}
 		}
 	}
 
@@ -56,7 +85,6 @@ public class Main {
 	 * tamaño dado
 	 */
 	private static void leerRec(int tam, int[][] input, Scanner scan, int x, int y) {
-
 		if (y < tam) {
 			if (x < tam) {
 				input[y][x] = scan.nextInt();
@@ -115,15 +143,37 @@ public class Main {
 		}
 	}
 
+	
+	
+	private static boolean isSame(int[][] m,int[][] m2,int tam, int i, int j) {
+        if (i < m.length) {
+            if (j >= m.length) {
+                return isSame(m,m2,tam, ++i, 0);
+            } else {
+                if ((m[i][j] != m2[i][j])) {
+                    return false;
+                } else {
+                    return isSame(m,m2,tam, i, ++j);
+                }
+            }
+        }
+        return true;
+    }
+	
+	
+	
+	
+	
+	
+	/*
 	private static boolean isSameMat(int[][] mat1, int[][] mat2, int tam, int x, int y) {
-		boolean out = true;
 
 		if (y < tam) {
 			if (x < tam) {
 				if (mat1[x][y] != mat2[x][y]) {
-					out = false;
+					 return false;
 				}
-				isSameMat(mat1, mat2, tam, x + 1, y);
+				return(isSameMat(mat1, mat2, tam, x + 1, y));
 
 			} else {
 				x = 0;
@@ -131,9 +181,10 @@ public class Main {
 			}
 		}
 
-		return out;
+		return true;
 
 	}
+	*/
 
 	private static void entradaInvalida() {
 		System.out.println("Entrada inválida.");
