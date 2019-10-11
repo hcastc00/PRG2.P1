@@ -1,48 +1,41 @@
 package prg2;
 
-import java.util.Arrays;
 import java.util.Scanner;
 
 public class Main {
 
 	public static void main(String[] args) {
 		Scanner sc = new Scanner(System.in);
+		String inputString = new String(); // String necesaria para la lectura de la matriz
 
 		// Realizamos todo dentro de un try/catch que manda entrada invalida cuando se
-		// lanza cualquier excepcion
+		// lanza calquier excepcion
 		try {
 
 			int size = sc.nextInt();
-			sc.nextLine();
+			sc.nextLine(); // Limpia buffer
 			// Comprueba que se introduce un num prositivo
 			if (size <= 0) {
 				entradaInvalida();
 			}
 
-			// Si el num es positivo crea una matriz de esas dimensiones y procede a llamr
-			// al metodo que la lee
+			// Si el num es positivo crea una matriz de esas dimensiones y procede a llamar
+			// al metodo de lectura de la matriz
 			else {
-				int[][] mat = new int[size][size];
-				String in = new String();
-				readToMat(size, mat, in, sc, 0, 0, null);
+				int[][] inputMatrix = new int[size][size];
+				readToMat(size, inputMatrix, inputString, sc, 0, 0, null);
 				sc.close();
-				System.out.println("Cerrao scanner");
-				// temp
-				print2D(mat);
 
-				int[][] sqrt = new int[size][size];
+				int[][] sqrtMatrix = new int[size][size];
 				int[][] sqrtTrans = new int[size][size];
-				matToSqrt(size, mat, sqrt, 0, 0);
-				transRec(sqrt, sqrtTrans, size, 0, 0);
 
-				// temp
-				print2D(sqrt);
-				print2D(sqrtTrans);
+				matToSqrt(size, inputMatrix, sqrtMatrix, 0, 0);
+				transRec(size, sqrtMatrix, sqrtTrans, 0, 0);
 
-				if (isSame(sqrt, sqrtTrans, size, 0, 0)) {
+				if (isSameMat(size, sqrtMatrix, sqrtTrans, 0, 0)) {
 					System.out.println("La matriz de tamaño " + size + " es de raíz entera simétrica.");
 				} else {
-					System.out.println("NOLOCO");
+					System.out.println("La matriz de tamaño " + size + " no es de raíz entera simétrica.");
 				}
 
 			}
@@ -51,82 +44,94 @@ public class Main {
 		}
 	}
 
-	private static void readToMat(int tam, int[][] mat, String input, Scanner scan, int x, int y, String[] out) {
-		System.out.println("x:" + x + " y:" + y);
-
-		if (y < tam) {
+	/*
+	 * Lee una matriz de forma recusrsiva filtrando la entrada como manda el
+	 * enunciado.
+	 */
+	private static void readToMat(int size, int[][] matrix, String input, Scanner scan, int x, int y,
+			String[] normalized) {
+		if (y < size) {
 
 			if (x == 0) {
-				System.out.println("SAPE");
 				input = scan.nextLine();
-				System.out.println(input);
-				input = input.replaceAll(" +", "-");
-				System.out.println(input);
-				out = input.split("-");
+				input = input.replaceAll(" +", ";");
+				normalized = input.split(";");
 
-				if (out.length != tam) {
+				if (normalized.length != size) {
 					entradaInvalida();
 				}
 			}
 
-			if (x < tam) {
-				mat[y][x] = Integer.parseInt(out[x]);
-				readToMat(tam, mat, input, scan, x + 1, y, out);
+			if (x < size) {
+				matrix[y][x] = Integer.parseInt(normalized[x]);
+				if (matrix[y][x] < 0) {
+					entradaInvalida();
+				}
+				readToMat(size, matrix, input, scan, x + 1, y, normalized);
 
 			} else {
 				x = 0;
-				readToMat(tam, mat, input, scan, x, y + 1, out);
+				readToMat(size, matrix, input, scan, x, y + 1, normalized);
 			}
 		}
 	}
 
 	/*
-	 * Escribe los num entroducidos por la entrada estandar en una matriz de una
-	 * tamaño dado
+	 * Obtiene de forma recursiva la matriz de raices enteras a partir de una dada
 	 */
-	private static void leerRec(int tam, int[][] input, Scanner scan, int x, int y) {
-		if (y < tam) {
-			if (x < tam) {
-				input[y][x] = scan.nextInt();
-				leerRec(tam, input, scan, x + 1, y);
+	private static void matToSqrt(int size, int[][] input, int[][] sqrt, int x, int y) {
+
+		if (y < size) {
+			if (x < size) {
+				sqrt[y][x] = sqrtRec(input[y][x], 1);
+				matToSqrt(size, input, sqrt, x + 1, y);
 
 			} else {
 				x = 0;
-				leerRec(tam, input, scan, x, y + 1);
+				matToSqrt(size, input, sqrt, x, y + 1);
+			}
+		}
+	}
+
+	/*
+	 * Obtiene de forma recursiva la matriz transpuesta a partir de una dada
+	 */
+	private static void transRec(int size, int[][] input, int[][] trans, int x, int y) {
+
+		if (y < size) {
+			if (x < size) {
+				trans[x][y] = input[y][x];
+				transRec(size, input, trans, x + 1, y);
+
+			} else {
+				x = 0;
+				transRec(size, input, trans, x, y + 1);
 			}
 		}
 
 	}
 
-	private static void matToSqrt(int tam, int[][] input, int[][] sqrt, int x, int y) {
-
-		if (y < tam) {
-			if (x < tam) {
-				sqrt[y][x] = sqrtRec(input[x][y], 1);
-				matToSqrt(tam, input, sqrt, x + 1, y);
-
+	/*
+	 * Comprueba de forma recursiva si dos matrices son iguales
+	 */
+	private static boolean isSameMat(int size, int[][] m, int[][] m2, int i, int j) {
+		if (i < size) {
+			if (j >= size) {
+				return isSameMat(size, m, m2, ++i, 0);
 			} else {
-				x = 0;
-				matToSqrt(tam, input, sqrt, x, y + 1);
+				if ((m[i][j] != m2[i][j])) {
+					return false;
+				} else {
+					return isSameMat(size, m, m2, i, ++j);
+				}
 			}
 		}
+		return true;
 	}
 
-	private static void transRec(int[][] mat, int[][] trans, int tam, int x, int y) {
-
-		if (y < tam) {
-			if (x < tam) {
-				trans[x][y] = mat[y][x];
-				transRec(mat, trans, tam, x + 1, y);
-
-			} else {
-				x = 0;
-				transRec(mat, trans, tam, x, y + 1);
-			}
-		}
-
-	}
-
+	/*
+	 * Obtiene la raiz entera de un numero dado
+	 */
 	private static int sqrtRec(int num, int i) {
 		if ((i * i) < num) {
 			i++;
@@ -143,64 +148,11 @@ public class Main {
 		}
 	}
 
-	
-	
-	private static boolean isSame(int[][] m,int[][] m2,int tam, int i, int j) {
-        if (i < m.length) {
-            if (j >= m.length) {
-                return isSame(m,m2,tam, ++i, 0);
-            } else {
-                if ((m[i][j] != m2[i][j])) {
-                    return false;
-                } else {
-                    return isSame(m,m2,tam, i, ++j);
-                }
-            }
-        }
-        return true;
-    }
-	
-	
-	
-	
-	
-	
 	/*
-	private static boolean isSameMat(int[][] mat1, int[][] mat2, int tam, int x, int y) {
-
-		if (y < tam) {
-			if (x < tam) {
-				if (mat1[x][y] != mat2[x][y]) {
-					 return false;
-				}
-				return(isSameMat(mat1, mat2, tam, x + 1, y));
-
-			} else {
-				x = 0;
-				isSameMat(mat1, mat2, tam, x, y + 1);
-			}
-		}
-
-		return true;
-
-	}
-	*/
-
+	 * Devuelve por la entrada estandar "Entrada invalida" y termina la ejecucion
+	 */
 	private static void entradaInvalida() {
 		System.out.println("Entrada inválida.");
 		System.exit(-1);
 	}
-
-	// TEMPORAL
-	public static void print2D(int mat[][]) {
-		// Loop through all rows
-		for (int[] row : mat) {
-
-			// converting each row as string
-			// and then printing in a separate line
-			System.out.println(Arrays.toString(row));
-		}
-		System.out.println("\n");
-	}
-
 }
